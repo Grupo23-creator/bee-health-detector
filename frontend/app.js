@@ -33,7 +33,7 @@ recordBtn.onclick = async () => {
 
             console.log("📤 Enviando audio al backend...");
 
-            const response = await fetch("/predict-audio", {
+            const response = await fetch("https://bee-health-detector.onrender.com/predict-audio", {
                 method: "POST",
                 body: formData
             });
