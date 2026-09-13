@@ -1,79 +1,41 @@
 from fastapi import FastAPI, UploadFile, File
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-
 import shutil
 import os
-import uuid
-import subprocess
 
-from audio_processing import extract_features
-from model import predict
+app = FastAPI(title="Bee Health Detector API")
 
-app = FastAPI(title="Bee Health Detector")
+# Cargar modelo previamente entrenado (ej. model.pkl)
+# model = joblib.load('varroa_detector_model.pkl')
 
-# CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Carpeta uploads
-UPLOAD_DIR = "uploads"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-# Servir frontend
-app.mount("/static", StaticFiles(directory="../frontend"), name="static")
-
-@app.get("/")
-async def root():
-    return FileResponse("../frontend/index.html")
-
-@app.post("/predict-audio")
-async def predict_audio(file: UploadFile = File(...)):
-
-    raw_path = os.path.join(
-        UPLOAD_DIR,
-        f"{uuid.uuid4()}.webm"
-    )
-
-    wav_path = raw_path.replace(".webm", ".wav")
-
-    # Guardar audio original
-    with open(raw_path, "wb") as buffer:
+@app.post("/api/v1/predict")
+async def predict_hive_health(file: UploadFile = File(...)):
+    temp_path = f"temp_{file.filename}"
+    with open(temp_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-
-    # Convertir a WAV
-    subprocess.run(
-        [
-            "ffmpeg",
-            "-y",
-            "-i", raw_path,
-            "-ar", "16000",
-            "-ac", "1",
-            wav_path
-        ],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        check=True
-    )
-
-    # Extraer características
-    features = extract_features(wav_path)
-
-    # Predicción
-    prediction = predict(features)
-
-    # Limpiar archivos
-    os.remove(raw_path)
-    os.remove(wav_path)
-
-    result = "Healthy" if prediction == 0 else "Unhealthy"
-
-    return {
-        "prediction": result
-    }
+        
+    try:
+        # Extraer características MFCC del audio recibido
+        features = process_audio_sample(temp_path)
+        
+        # Realizar la predicción
+        # prediction = model.predict([features])[0]
+        # probability = model.predict_proba([features])[0]
+        
+        # Simulación de respuesta para pruebas iniciales
+        prediction_label = "Varroa destructor" # o "Sano"
+        confidence = 0.94
+        
+        return {
+            "status": "success",
+            "filename": file.filename,
+            "diagnosis": prediction_label,
+            "confidence": confidence,
+            "metrics_summary": {
+                "sampling_rate": "8000 Hz",
+                "segment_duration": "2.0s",
+                "extracted_features": "20 MFCCs"
+            }
+        }
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
