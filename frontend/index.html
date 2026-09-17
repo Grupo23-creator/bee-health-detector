@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Bee Health Detector</title>
+
+    <meta
+        name="description"
+        content="Prototipo de monitoreo bioacústico para colmenas"
+    >
+
+    <link
+        rel="stylesheet"
+        href="styles.css"
+    >
+</head>
+
+<body>
+
+    <!-- ========================================================= -->
+    <!-- FONDO -->
+    <!-- ========================================================= -->
+
+    <div class="background-glow glow-one"></div>
+    <div class="background-glow glow-two"></div>
+
+
+    <!-- ========================================================= -->
+    <!-- CONTENEDOR PRINCIPAL -->
+    <!-- ========================================================= -->
+
+    <main class="app-container">
+
+        <!-- ===================================================== -->
+        <!-- HEADER -->
+        <!-- ===================================================== -->
+
+        <header class="header">
+
+            <div class="brand">
+
+                <div class="bee-icon">
+                    🐝
+                </div>
+
+                <div>
+                    <h1>Bee Health Detector</h1>
+
+                    <p>
+                        Monitoreo bioacústico experimental
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="status-pill">
+
+                <span class="status-dot"></span>
+
+                Sistema activo
+
+            </div>
+
+        </header>
+
+
+        <!-- ===================================================== -->
+        <!-- PRESENTACIÓN -->
+        <!-- ===================================================== -->
+
+        <section class="hero">
+
+            <div class="hero-text">
+
+                <span class="eyebrow">
+                    BIOACÚSTICA + INTELIGENCIA ARTIFICIAL
+                </span>
+
+                <h2>
+                    Escucha la salud
+                    <br>
+                    de tu colmena
+                </h2>
+
+                <p>
+                    Captura una muestra de audio de las abejas
+                    y analiza sus características acústicas mediante
+                    un modelo de inteligencia artificial.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- GRABADOR -->
+        <!-- ===================================================== -->
+
+        <section class="record-card">
+
+            <div class="record-card-header">
+
+                <div>
+
+                    <span class="section-label">
+                        CAPTURA DE AUDIO
+                    </span>
+
+                    <h3>
+                        Registra una muestra
+                    </h3>
+
+                </div>
+
+                <div class="microphone-icon">
+                    🎙️
+                </div>
+
+            </div>
+
+
+            <!-- Visualizador -->
+
+            <div
+                id="visualizer"
+                class="visualizer"
+            >
+
+                <div class="visualizer-line"></div>
+
+                <div class="visualizer-line"></div>
+
+                <div class="visualizer-line"></div>
+
+                <div class="visualizer-line"></div>
+
+                <div class="visualizer-line"></div>
+
+                <div class="visualizer-line"></div>
+
+                <div class="visualizer-line"></div>
+
+                <div class="visualizer-line"></div>
+
+                <div class="visualizer-line"></div>
+
+                <div class="visualizer-line"></div>
+
+                <div class="visualizer-line"></div>
+
+                <div class="visualizer-line"></div>
+
+                <div class="visualizer-line"></div>
+
+                <div class="visualizer-line"></div>
+
+                <div class="visualizer-line"></div>
+
+            </div>
+
+
+            <!-- Estado -->
+
+            <div
+                id="status"
+                class="record-status"
+            >
+                Listo para comenzar
+            </div>
+
+
+            <!-- Botones -->
+
+            <div class="record-controls">
+
+                <button
+                    id="recordBtn"
+                    class="record-button"
+                >
+
+                    <span class="record-button-icon">
+                        🎙️
+                    </span>
+
+                    <span>
+                        Iniciar grabación
+                    </span>
+
+                </button>
+
+
+                <button
+                    id="stopBtn"
+                    class="stop-button"
+                    disabled
+                >
+
+                    <span>
+                        ⏹
+                    </span>
+
+                    Detener
+
+                </button>
+
+            </div>
+
+
+            <p class="record-help">
+                Permite el acceso al micrófono cuando el navegador
+                lo solicite.
+            </p>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- RESULTADO -->
+        <!-- ===================================================== -->
+
+        <section
+            id="resultCard"
+            class="result-card hidden"
+        >
+
+            <div class="result-header">
+
+                <div>
+
+                    <span class="section-label">
+                        ANÁLISIS COMPLETADO
+                    </span>
+
+                    <h3>
+                        Resultado del análisis
+                    </h3>
+
+                </div>
+
+                <div
+                    id="resultBadge"
+                    class="result-badge"
+                >
+                    —
+                </div>
+
+            </div>
+
+
+            <div class="diagnosis">
+
+                <span class="diagnosis-label">
+                    NIVEL ESTIMADO
+                </span>
+
+                <h2 id="diagnosisText">
+                    —
+                </h2>
+
+                <p id="confidenceText">
+                    —
+                </p>
+
+            </div>
+
+
+            <!-- Probabilidades -->
+
+            <div class="probabilities">
+
+                <div class="probability-row">
+
+                    <div class="probability-info">
+
+                        <span>
+                            Nivel bajo (LOW)
+                        </span>
+
+                        <strong id="lowProbability">
+                            0%
+                        </strong>
+
+                    </div>
+
+                    <div class="progress-track">
+
+                        <div
+                            id="lowBar"
+                            class="progress-bar low"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="probability-row">
+
+                    <div class="probability-info">
+
+                        <span>
+                            Nivel alto (HIGH)
+                        </span>
+
+                        <strong id="highProbability">
+                            0%
+                        </strong>
+
+                    </div>
+
+                    <div class="progress-track">
+
+                        <div
+                            id="highBar"
+                            class="progress-bar high"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Segmentos -->
+
+            <div class="segments-grid">
+
+                <div class="metric">
+
+                    <span class="metric-value"
+                          id="totalSegments">
+                        —
+                    </span>
+
+                    <span class="metric-label">
+                        Segmentos analizados
+                    </span>
+
+                </div>
+
+
+                <div class="metric">
+
+                    <span class="metric-value"
+                          id="lowSegments">
+                        —
+                    </span>
+
+                    <span class="metric-label">
+                        Segmentos LOW
+                    </span>
+
+                </div>
+
+
+                <div class="metric">
+
+                    <span class="metric-value"
+                          id="highSegments">
+                        —
+                    </span>
+
+                    <span class="metric-label">
+                        Segmentos HIGH
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- TECNOLOGÍA -->
+        <!-- ===================================================== -->
+
+        <section class="technology-card">
+
+            <div class="section-label">
+                PROCESAMIENTO
+            </div>
+
+            <h3>
+                Tecnología utilizada
+            </h3>
+
+
+            <div class="technology-grid">
+
+                <div class="technology-item">
+
+                    <span class="technology-icon">
+                        🎧
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Audio
+                        </strong>
+
+                        <span>
+                            16 kHz · Mono
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="technology-item">
+
+                    <span class="technology-icon">
+                        ✂️
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Segmentación
+                        </strong>
+
+                        <span>
+                            Ventanas de 2 segundos
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="technology-item">
+
+                    <span class="technology-icon">
+                        📊
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            MFCC
+                        </strong>
+
+                        <span>
+                            26 características
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="technology-item">
+
+                    <span class="technology-icon">
+                        🤖
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            IA
+                        </strong>
+
+                        <span>
+                            Random Forest
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- ADVERTENCIA -->
+        <!-- ===================================================== -->
+
+        <section class="notice-card">
+
+            <span class="notice-icon">
+                ℹ️
+            </span>
+
+            <div>
+
+                <strong>
+                    Importante
+                </strong>
+
+                <p>
+                    Este sistema es un prototipo académico y
+                    experimental. El resultado corresponde a una
+                    clasificación basada en características
+                    bioacústicas y no constituye un diagnóstico
+                    veterinario.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- FOOTER -->
+        <!-- ===================================================== -->
+
+        <footer>
+
+            <span>
+                Bee Health Detector
+            </span>
+
+            <span>
+                Prototipo académico · 2026
+            </span>
+
+        </footer>
+
+    </main>
+
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>

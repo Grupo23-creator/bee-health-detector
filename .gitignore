@@ -1,0 +1,34 @@
+# Entornos virtuales
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos temporales de la aplicación
+uploads/
+*.tmp
+*.temp
+
+# Dataset de audio descargado localmente
+audio_2022_chunk_1/
+chunk1_header.bin
+*.wav
+*.mp3
+*.webm
+*.ogg
+*.m4a
+
+# Datos generados localmente
+training/data/processed/
+training/data/splits/
+
+# Logs
+*.log
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
