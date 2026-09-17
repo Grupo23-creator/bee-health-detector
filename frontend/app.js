@@ -6,7 +6,7 @@ console.log("🐝 Bee Health Detector - app.js cargado");
 // ============================================================================
 
 // Backend local utilizado durante desarrollo
-const API_URL = "http://127.0.0.1:8000/api/v1/predict";
+const API_URL = "https://bee-health-api.onrender.com/api/v1/predict";
 
 
 // ============================================================================
