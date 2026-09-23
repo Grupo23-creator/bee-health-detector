@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Análisis | Bee Health Detector</title>
+
+    <link rel="stylesheet" href="analisis.css">
+</head>
+
+<body>
+
+<div class="app-shell">
+
+    <!-- =========================================================
+         SIDEBAR
+         ========================================================= -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-icon">🐝</div>
+
+            <div>
+                <div class="brand-title">BEE HEALTH</div>
+                <div class="brand-subtitle">DETECTOR</div>
+            </div>
+
+        </div>
+
+
+        <nav class="sidebar-nav">
+
+            <a href="index.html" class="nav-item">
+                <span>⌂</span>
+                <span>Inicio</span>
+            </a>
+
+            <a href="index.html" class="nav-item">
+                <span>🎙</span>
+                <span>Nuevo análisis</span>
+            </a>
+
+            <a href="analisis.html" class="nav-item active">
+                <span>▣</span>
+                <span>Análisis</span>
+            </a>
+
+        </nav>
+
+
+        <div class="sidebar-status">
+
+            <div class="status-dot"></div>
+
+            <div>
+                <strong>Sistema en línea</strong>
+                <small>API: Render</small>
+                <small>Frontend: Vercel</small>
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =========================================================
+         CONTENIDO PRINCIPAL
+         ========================================================= -->
+
+    <main class="main-content">
+
+
+        <!-- =====================================================
+             HEADER
+             ===================================================== -->
+
+        <header class="dashboard-header">
+
+            <div>
+
+                <div class="page-title-row">
+
+                    <div class="page-icon">
+                        📊
+                    </div>
+
+                    <div>
+
+                        <h1>Análisis</h1>
+
+                        <p>
+                            Histórico de resultados y estadísticas del sistema
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <a href="index.html" class="new-analysis-button">
+                🎙 Nuevo análisis
+            </a>
+
+        </header>
+
+
+        <!-- =====================================================
+             AVISO
+             ===================================================== -->
+
+        <section class="notice">
+
+            <div class="notice-icon">
+                ⚠
+            </div>
+
+            <div>
+
+                <strong>Resultados experimentales</strong>
+
+                <p>
+                    Los resultados mostrados corresponden a clasificaciones
+                    experimentales generadas por el prototipo Bee Health Detector.
+                    No representan diagnósticos veterinarios ni confirman por sí
+                    mismos la presencia o ausencia de Varroa destructor.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             KPIs
+             Los valores iniciales son 0.
+             analisis.js los reemplazará con datos reales.
+             ===================================================== -->
+
+        <section class="kpi-grid">
+
+
+            <!-- AUDIOS -->
+
+            <article class="kpi-card blue">
+
+                <div class="kpi-icon">
+                    🎙
+                </div>
+
+                <div>
+
+                    <span>Audios procesados</span>
+
+                    <strong id="totalAudios">
+                        0
+                    </strong>
+
+                    <small>
+                        Histórico del sistema
+                    </small>
+
+                </div>
+
+            </article>
+
+
+            <!-- HIGH -->
+
+            <article class="kpi-card red">
+
+                <div class="kpi-icon">
+                    ⚠
+                </div>
+
+                <div>
+
+                    <span>Resultados HIGH</span>
+
+                    <strong id="totalHigh">
+                        0
+                    </strong>
+
+                    <small>
+                        0 % del total
+                    </small>
+
+                </div>
+
+            </article>
+
+
+            <!-- LOW -->
+
+            <article class="kpi-card green">
+
+                <div class="kpi-icon">
+                    ✓
+                </div>
+
+                <div>
+
+                    <span>Resultados LOW</span>
+
+                    <strong id="totalLow">
+                        0
+                    </strong>
+
+                    <small>
+                        0 % del total
+                    </small>
+
+                </div>
+
+            </article>
+
+
+            <!-- CONFIANZA -->
+
+            <article class="kpi-card purple">
+
+                <div class="kpi-icon">
+                    ◔
+                </div>
+
+                <div>
+
+                    <span>Confianza promedio</span>
+
+                    <strong id="avgConfidence">
+                        0%
+                    </strong>
+
+                    <small>
+                        Promedio de predicciones
+                    </small>
+
+                </div>
+
+            </article>
+
+
+            <!-- SEGMENTOS -->
+
+            <article class="kpi-card cyan">
+
+                <div class="kpi-icon">
+                    ≋
+                </div>
+
+                <div>
+
+                    <span>Segmentos procesados</span>
+
+                    <strong id="totalSegments">
+                        0
+                    </strong>
+
+                    <small>
+                        Señales analizadas
+                    </small>
+
+                </div>
+
+            </article>
+
+        </section>
+
+
+        <!-- =====================================================
+             FILA PRINCIPAL DE GRÁFICOS
+             ===================================================== -->
+
+        <section class="charts-grid">
+
+
+            <!-- =================================================
+                 DISTRIBUCIÓN DE RESULTADOS
+                 ================================================= -->
+
+            <article class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h2>Distribución de resultados</h2>
+
+                        <p>
+                            Clasificaciones experimentales del modelo
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="donut-container">
+
+                    <div class="donut-chart">
+
+                        <div class="donut-center">
+
+                            <strong>0</strong>
+
+                            <span>análisis</span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="legend">
+
+
+                        <div class="legend-item">
+
+                            <span class="legend-color high"></span>
+
+                            <span>HIGH</span>
+
+                            <strong>0</strong>
+
+                            <small>0%</small>
+
+                        </div>
+
+
+                        <div class="legend-item">
+
+                            <span class="legend-color low"></span>
+
+                            <span>LOW</span>
+
+                            <strong>0</strong>
+
+                            <small>0%</small>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </article>
+
+
+            <!-- =================================================
+                 EVOLUCIÓN
+                 analisis.js genera las barras dinámicamente.
+                 ================================================= -->
+
+            <article class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h2>Evolución de análisis</h2>
+
+                        <p>
+                            Cantidad de análisis y probabilidad HIGH
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- IMPORTANTE:
+                     No agregar barras manualmente.
+                     analisis.js las genera. -->
+
+                <div class="bar-chart"></div>
+
+
+                <div class="chart-note">
+
+                    <span class="chart-dot blue-dot"></span>
+
+                    Cantidad de análisis por día
+
+                </div>
+
+            </article>
+
+        </section>
+
+
+        <!-- =====================================================
+             SEGUNDA FILA
+             ===================================================== -->
+
+        <section class="three-column-grid">
+
+
+            <!-- =================================================
+                 RESULTADOS POR COLMENA
+                 ================================================= -->
+
+            <article class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h2>Resultados por colmena</h2>
+
+                        <p>
+                            Distribución experimental
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!--
+                    analisis.js genera las colmenas reales
+                    a partir del historial.
+                -->
+
+                <div class="hive-list"></div>
+
+            </article>
+
+
+            <!-- =================================================
+                 PROCESAMIENTO ACÚSTICO
+                 ================================================= -->
+
+            <article class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h2>Procesamiento acústico</h2>
+
+                        <p>
+                            Resumen del procesamiento
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="processing-grid">
+
+
+                    <!-- SEGMENTOS TOTALES -->
+
+                    <div class="mini-stat">
+
+                        <span>≋</span>
+
+                        <small>
+                            Segmentos totales
+                        </small>
+
+                        <strong>
+                            0
+                        </strong>
+
+                    </div>
+
+
+                    <!-- SEGMENTOS LOW -->
+
+                    <div class="mini-stat green-stat">
+
+                        <span>✓</span>
+
+                        <small>
+                            Segmentos LOW
+                        </small>
+
+                        <strong>
+                            0
+                        </strong>
+
+                    </div>
+
+
+                    <!-- SEGMENTOS HIGH -->
+
+                    <div class="mini-stat red-stat">
+
+                        <span>⚠</span>
+
+                        <small>
+                            Segmentos HIGH
+                        </small>
+
+                        <strong>
+                            0
+                        </strong>
+
+                    </div>
+
+
+                    <!-- PROMEDIO -->
+
+                    <div class="mini-stat purple-stat">
+
+                        <span>◔</span>
+
+                        <small>
+                            Promedio por audio
+                        </small>
+
+                        <strong>
+                            0
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+
+            <!-- =================================================
+                 CONFIANZA
+                 ================================================= -->
+
+            <article class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h2>Confianza promedio</h2>
+
+                        <p>
+                            Comportamiento del modelo
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="confidence-chart">
+
+                    <div class="confidence-line"></div>
+
+
+                    <!--
+                        analisis.js genera los puntos
+                        dinámicamente.
+                    -->
+
+                    <div class="confidence-points"></div>
+
+                </div>
+
+
+                <div class="confidence-value">
+                    0%
+                </div>
+
+            </article>
+
+        </section>
+
+
+        <!-- =====================================================
+             HISTORIAL
+             ===================================================== -->
+
+        <section class="panel history-panel">
+
+
+            <div class="panel-header history-header">
+
+                <div>
+
+                    <h2>Historial de análisis</h2>
+
+                    <p>
+                        Últimos resultados procesados
+                    </p>
+
+                </div>
+
+
+                <!-- FILTROS -->
+
+                <div class="filters">
+
+                    <select id="resultFilter">
+
+                        <option value="ALL">
+                            Todos los resultados
+                        </option>
+
+                        <option value="HIGH">
+                            HIGH
+                        </option>
+
+                        <option value="LOW">
+                            LOW
+                        </option>
+
+                    </select>
+
+
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Buscar archivo..."
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- TABLA -->
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Fecha y hora</th>
+
+                            <th>Archivo</th>
+
+                            <th>Colmena</th>
+
+                            <th>Segmentos</th>
+
+                            <th>LOW</th>
+
+                            <th>HIGH</th>
+
+                            <th>Resultado</th>
+
+                            <th>Confianza</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <!--
+                        IMPORTANTE:
+                        No agregar registros manualmente.
+
+                        analisis.js llena esta tabla
+                        utilizando localStorage.
+                    -->
+
+                    <tbody id="historyTable"></tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             FOOTER
+             ===================================================== -->
+
+        <footer>
+
+            <span>
+                🐝 Bee Health Detector
+            </span>
+
+            <span>
+                Prototipo experimental · CUN
+            </span>
+
+        </footer>
+
+
+    </main>
+
+</div>
+
+
+<!-- =============================================================
+     JAVASCRIPT DEL DASHBOARD
+     ============================================================= -->
+
+<script src="analisis.js"></script>
+
+</body>
+
+</html>

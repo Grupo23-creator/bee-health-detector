@@ -2,6 +2,7 @@
 <html lang="es">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -11,38 +12,147 @@
 
     <title>Bee Health Detector</title>
 
-    <meta
-        name="description"
-        content="Prototipo de monitoreo bioacústico para colmenas"
-    >
-
     <link
         rel="stylesheet"
         href="styles.css"
     >
+
+    <!-- ========================================================= -->
+    <!-- ESTILOS DEL SELECTOR DE COLMENA                            -->
+    <!-- ========================================================= -->
+
+    <style>
+
+        .hive-selector {
+            margin-top: 28px;
+            padding: 20px;
+            background: #fffaf0;
+            border: 1px solid #fde68a;
+            border-radius: 18px;
+        }
+
+        .hive-selector-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .hive-selector select,
+        .hive-selector input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            background: white;
+            color: #172033;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .hive-selector select:focus,
+        .hive-selector input:focus {
+            border-color: #f59e0b;
+            box-shadow:
+                0 0 0 3px rgba(245, 158, 11, 0.12);
+        }
+
+        .custom-hive {
+            margin-top: 12px;
+        }
+
+        .custom-hive.hidden {
+            display: none;
+        }
+
+        .hive-help {
+            margin-top: 7px;
+            color: #9ca3af;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .selected-hive {
+            margin-top: 12px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .selected-hive strong {
+            color: #172033;
+        }
+
+        .analysis-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 10px;
+            padding: 9px 13px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #e5e7eb;
+            border-radius: 999px;
+            color: #4b5563;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .analysis-link:hover {
+            transform: translateY(-1px);
+            box-shadow:
+                0 6px 18px rgba(15, 23, 42, 0.08);
+        }
+
+        @media (max-width: 650px) {
+
+            .analysis-link {
+                display: none;
+            }
+
+            .hive-selector {
+                padding: 16px;
+            }
+
+        }
+
+    </style>
+
 </head>
+
 
 <body>
 
     <!-- ========================================================= -->
-    <!-- FONDO -->
+    <!-- ELEMENTOS DECORATIVOS DEL FONDO                            -->
     <!-- ========================================================= -->
 
     <div class="background-glow glow-one"></div>
+
     <div class="background-glow glow-two"></div>
 
 
     <!-- ========================================================= -->
-    <!-- CONTENEDOR PRINCIPAL -->
+    <!-- CONTENEDOR PRINCIPAL                                       -->
     <!-- ========================================================= -->
 
-    <main class="app-container">
+    <div class="app-container">
+
 
         <!-- ===================================================== -->
-        <!-- HEADER -->
+        <!-- HEADER                                                  -->
         <!-- ===================================================== -->
 
         <header class="header">
+
 
             <div class="brand">
 
@@ -51,83 +161,216 @@
                 </div>
 
                 <div>
-                    <h1>Bee Health Detector</h1>
+
+                    <h1>
+                        Bee Health Detector
+                    </h1>
 
                     <p>
-                        Monitoreo bioacústico experimental
+                        Detección experimental de señales asociadas a Varroa destructor
                     </p>
+
                 </div>
 
             </div>
 
-            <div class="status-pill">
 
-                <span class="status-dot"></span>
+            <div>
 
-                Sistema activo
+                <span class="status-pill">
+
+                    <span class="status-dot"></span>
+
+                    Sistema en línea
+
+                </span>
+
+
+                <a
+                    href="analisis.html"
+                    class="analysis-link"
+                >
+                    📊 Análisis
+                </a>
 
             </div>
+
 
         </header>
 
 
         <!-- ===================================================== -->
-        <!-- PRESENTACIÓN -->
+        <!-- HERO                                                    -->
         <!-- ===================================================== -->
 
         <section class="hero">
 
-            <div class="hero-text">
+            <span class="eyebrow">
+                INTELIGENCIA ARTIFICIAL · BIOACÚSTICA
+            </span>
 
-                <span class="eyebrow">
-                    BIOACÚSTICA + INTELIGENCIA ARTIFICIAL
-                </span>
 
-                <h2>
-                    Escucha la salud
-                    <br>
-                    de tu colmena
-                </h2>
+            <h2>
+                Escucha la salud de tus abejas
+            </h2>
 
-                <p>
-                    Captura una muestra de audio de las abejas
-                    y analiza sus características acústicas mediante
-                    un modelo de inteligencia artificial.
-                </p>
 
-            </div>
+            <p>
+
+                Captura el sonido de una colmena y analiza sus
+                características acústicas mediante un modelo
+                experimental de inteligencia artificial.
+
+            </p>
 
         </section>
 
 
         <!-- ===================================================== -->
-        <!-- GRABADOR -->
+        <!-- TARJETA DE GRABACIÓN                                    -->
         <!-- ===================================================== -->
 
         <section class="record-card">
 
+
             <div class="record-card-header">
+
 
                 <div>
 
                     <span class="section-label">
-                        CAPTURA DE AUDIO
+                        NUEVO ANÁLISIS
                     </span>
 
+
                     <h3>
-                        Registra una muestra
+                        Capturar audio de la colmena
                     </h3>
 
                 </div>
+
 
                 <div class="microphone-icon">
                     🎙️
                 </div>
 
+
             </div>
 
 
-            <!-- Visualizador -->
+            <!-- ================================================= -->
+            <!-- IDENTIFICACIÓN DE COLMENA                           -->
+            <!-- ================================================= -->
+
+            <div class="hive-selector">
+
+
+                <label
+                    for="hiveSelect"
+                    class="hive-selector-label"
+                >
+                    Identificación de la colmena
+                </label>
+
+
+                <select
+                    id="hiveSelect"
+                    name="hiveSelect"
+                >
+
+                    <option
+                        value=""
+                        selected
+                    >
+                        Selecciona una colmena
+                    </option>
+
+
+                    <option value="HIVE-3628">
+                        HIVE-3628
+                    </option>
+
+
+                    <option value="HIVE-3631">
+                        HIVE-3631
+                    </option>
+
+
+                    <option value="HIVE-3640">
+                        HIVE-3640
+                    </option>
+
+
+                    <option value="HIVE-3690">
+                        HIVE-3690
+                    </option>
+
+
+                    <option value="HIVE-3691">
+                        HIVE-3691
+                    </option>
+
+
+                    <option value="HIVE-3692">
+                        HIVE-3692
+                    </option>
+
+
+                    <option value="HIVE-3693">
+                        HIVE-3693
+                    </option>
+
+
+                    <option value="OTHER">
+                        Otra / Nueva colmena
+                    </option>
+
+                </select>
+
+
+                <!-- ============================================= -->
+                <!-- NUEVA COLMENA                                  -->
+                <!-- ============================================= -->
+
+                <div
+                    id="customHiveGroup"
+                    class="custom-hive hidden"
+                >
+
+                    <label
+                        for="customHive"
+                        class="hive-selector-label"
+                    >
+                        Código de la nueva colmena
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="customHive"
+                        name="customHive"
+                        placeholder="Ejemplo: HIVE-3700"
+                        maxlength="50"
+                    >
+
+                </div>
+
+
+                <p class="hive-help">
+
+                    Selecciona la colmena cuyo audio vas a registrar.
+                    Esta identificación se almacenará junto con el resultado
+                    del análisis.
+
+                </p>
+
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- VISUALIZADOR                                      -->
+            <!-- ================================================= -->
 
             <div
                 id="visualizer"
@@ -135,53 +378,40 @@
             >
 
                 <div class="visualizer-line"></div>
-
                 <div class="visualizer-line"></div>
-
                 <div class="visualizer-line"></div>
-
                 <div class="visualizer-line"></div>
-
                 <div class="visualizer-line"></div>
-
                 <div class="visualizer-line"></div>
-
                 <div class="visualizer-line"></div>
-
                 <div class="visualizer-line"></div>
-
                 <div class="visualizer-line"></div>
-
-                <div class="visualizer-line"></div>
-
-                <div class="visualizer-line"></div>
-
-                <div class="visualizer-line"></div>
-
-                <div class="visualizer-line"></div>
-
-                <div class="visualizer-line"></div>
-
                 <div class="visualizer-line"></div>
 
             </div>
 
 
-            <!-- Estado -->
+            <!-- ================================================= -->
+            <!-- ESTADO                                             -->
+            <!-- ================================================= -->
 
-            <div
+            <p
                 id="status"
                 class="record-status"
             >
-                Listo para comenzar
-            </div>
+                Selecciona una colmena para comenzar.
+            </p>
 
 
-            <!-- Botones -->
+            <!-- ================================================= -->
+            <!-- BOTONES                                            -->
+            <!-- ================================================= -->
 
             <div class="record-controls">
 
+
                 <button
+                    type="button"
                     id="recordBtn"
                     class="record-button"
                 >
@@ -190,40 +420,44 @@
                         🎙️
                     </span>
 
-                    <span>
-                        Iniciar grabación
-                    </span>
+                    Iniciar grabación
 
                 </button>
 
 
                 <button
+                    type="button"
                     id="stopBtn"
                     class="stop-button"
                     disabled
                 >
 
-                    <span>
-                        ⏹
-                    </span>
-
-                    Detener
+                    ⏹️ Detener grabación
 
                 </button>
+
 
             </div>
 
 
+            <!-- ================================================= -->
+            <!-- AYUDA                                              -->
+            <!-- ================================================= -->
+
             <p class="record-help">
+
                 Permite el acceso al micrófono cuando el navegador
-                lo solicite.
+                lo solicite. Se recomienda grabar en un ambiente
+                lo más silencioso posible.
+
             </p>
+
 
         </section>
 
 
         <!-- ===================================================== -->
-        <!-- RESULTADO -->
+        <!-- RESULTADO                                              -->
         <!-- ===================================================== -->
 
         <section
@@ -231,57 +465,71 @@
             class="result-card hidden"
         >
 
+
             <div class="result-header">
+
 
                 <div>
 
                     <span class="section-label">
-                        ANÁLISIS COMPLETADO
+                        RESULTADO DEL MODELO
                     </span>
-
-                    <h3>
-                        Resultado del análisis
-                    </h3>
 
                 </div>
 
-                <div
+
+                <span
                     id="resultBadge"
                     class="result-badge"
                 >
                     —
-                </div>
+                </span>
+
 
             </div>
 
+
+            <!-- ================================================= -->
+            <!-- DIAGNÓSTICO                                        -->
+            <!-- ================================================= -->
 
             <div class="diagnosis">
 
+
                 <span class="diagnosis-label">
-                    NIVEL ESTIMADO
+                    RESULTADO DEL ANÁLISIS
                 </span>
 
+
                 <h2 id="diagnosisText">
-                    —
+                    Resultado desconocido
                 </h2>
 
+
                 <p id="confidenceText">
-                    —
+                    Confianza estimada del modelo: 0%
                 </p>
+
 
             </div>
 
 
-            <!-- Probabilidades -->
+            <!-- ================================================= -->
+            <!-- PROBABILIDADES                                     -->
+            <!-- ================================================= -->
 
             <div class="probabilities">
 
+
+                <!-- LOW -->
+
                 <div class="probability-row">
+
 
                     <div class="probability-info">
 
                         <span>
-                            Nivel bajo (LOW)
+                            LOW
                         </span>
 
                         <strong id="lowProbability">
@@ -289,6 +537,7 @@
                         </strong>
 
                     </div>
+
 
                     <div class="progress-track">
 
@@ -299,15 +548,19 @@
 
                     </div>
 
+
                 </div>
 
 
+                <!-- HIGH -->
+
                 <div class="probability-row">
+
 
                     <div class="probability-info">
 
                         <span>
-                            Nivel alto (HIGH)
+                            HIGH
                         </span>
 
                         <strong id="highProbability">
@@ -315,6 +568,7 @@
                         </strong>
 
                     </div>
+
 
                     <div class="progress-track">
 
@@ -325,24 +579,31 @@
 
                     </div>
 
+
                 </div>
+
 
             </div>
 
 
-            <!-- Segmentos -->
+            <!-- ================================================= -->
+            <!-- MÉTRICAS DE SEGMENTOS                              -->
+            <!-- ================================================= -->
 
             <div class="segments-grid">
 
+
                 <div class="metric">
 
-                    <span class="metric-value"
-                          id="totalSegments">
-                        —
+                    <span
+                        id="totalSegments"
+                        class="metric-value"
+                    >
+                        0
                     </span>
 
                     <span class="metric-label">
-                        Segmentos analizados
+                        Total segmentos
                     </span>
 
                 </div>
@@ -350,9 +611,11 @@
 
                 <div class="metric">
 
-                    <span class="metric-value"
-                          id="lowSegments">
-                        —
+                    <span
+                        id="lowSegments"
+                        class="metric-value"
+                    >
+                        0
                     </span>
 
                     <span class="metric-label">
@@ -364,9 +627,11 @@
 
                 <div class="metric">
 
-                    <span class="metric-value"
-                          id="highSegments">
-                        —
+                    <span
+                        id="highSegments"
+                        class="metric-value"
+                    >
+                        0
                     </span>
 
                     <span class="metric-label">
@@ -375,33 +640,73 @@
 
                 </div>
 
+
             </div>
+
 
         </section>
 
 
         <!-- ===================================================== -->
-        <!-- TECNOLOGÍA -->
+        <!-- AVISO ACADÉMICO                                       -->
+        <!-- ===================================================== -->
+
+        <section class="notice-card">
+
+
+            <div class="notice-icon">
+                ⚠️
+            </div>
+
+
+            <div>
+
+                <strong>
+                    Aviso académico
+                </strong>
+
+
+                <p>
+
+                    Este resultado corresponde a un prototipo experimental.
+                    No representa un diagnóstico veterinario ni confirma por
+                    sí solo la presencia o ausencia de Varroa destructor.
+
+                </p>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- TECNOLOGÍAS                                            -->
         <!-- ===================================================== -->
 
         <section class="technology-card">
 
-            <div class="section-label">
+
+            <span class="section-label">
                 PROCESAMIENTO
-            </div>
+            </span>
+
 
             <h3>
-                Tecnología utilizada
+                Tecnologías utilizadas
             </h3>
 
 
             <div class="technology-grid">
 
+
+                <!-- AUDIO -->
+
                 <div class="technology-item">
 
-                    <span class="technology-icon">
-                        🎧
-                    </span>
+                    <div class="technology-icon">
+                        🎙️
+                    </div>
 
                     <div>
 
@@ -410,7 +715,7 @@
                         </strong>
 
                         <span>
-                            16 kHz · Mono
+                            Micrófono del navegador
                         </span>
 
                     </div>
@@ -418,20 +723,22 @@
                 </div>
 
 
+                <!-- PROCESAMIENTO -->
+
                 <div class="technology-item">
 
-                    <span class="technology-icon">
-                        ✂️
-                    </span>
+                    <div class="technology-icon">
+                        🔊
+                    </div>
 
                     <div>
 
                         <strong>
-                            Segmentación
+                            Procesamiento
                         </strong>
 
                         <span>
-                            Ventanas de 2 segundos
+                            FFmpeg · 16 kHz · Mono
                         </span>
 
                     </div>
@@ -439,20 +746,22 @@
                 </div>
 
 
+                <!-- CARACTERÍSTICAS -->
+
                 <div class="technology-item">
 
-                    <span class="technology-icon">
-                        📊
-                    </span>
+                    <div class="technology-icon">
+                        📈
+                    </div>
 
                     <div>
 
                         <strong>
-                            MFCC
+                            Características
                         </strong>
 
                         <span>
-                            26 características
+                            MFCC · Ventana Hann
                         </span>
 
                     </div>
@@ -460,80 +769,64 @@
                 </div>
 
 
+                <!-- MODELO -->
+
                 <div class="technology-item">
 
-                    <span class="technology-icon">
+                    <div class="technology-icon">
                         🤖
-                    </span>
+                    </div>
 
                     <div>
 
                         <strong>
-                            IA
+                            Modelo
                         </strong>
 
                         <span>
-                            Random Forest
+                            Clasificador Random Forest
                         </span>
 
                     </div>
 
                 </div>
 
+
             </div>
+
 
         </section>
 
 
         <!-- ===================================================== -->
-        <!-- ADVERTENCIA -->
-        <!-- ===================================================== -->
-
-        <section class="notice-card">
-
-            <span class="notice-icon">
-                ℹ️
-            </span>
-
-            <div>
-
-                <strong>
-                    Importante
-                </strong>
-
-                <p>
-                    Este sistema es un prototipo académico y
-                    experimental. El resultado corresponde a una
-                    clasificación basada en características
-                    bioacústicas y no constituye un diagnóstico
-                    veterinario.
-                </p>
-
-            </div>
-
-        </section>
-
-
-        <!-- ===================================================== -->
-        <!-- FOOTER -->
+        <!-- FOOTER                                                 -->
         <!-- ===================================================== -->
 
         <footer>
 
-            <span>
-                Bee Health Detector
-            </span>
 
-            <span>
-                Prototipo académico · 2026
-            </span>
+            <p>
+                Bee Health Detector · Proyecto académico CUN
+            </p>
+
+
+            <p>
+                Resultados experimentales para fines de investigación.
+            </p>
+
 
         </footer>
 
-    </main>
 
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- JAVASCRIPT                                                 -->
+    <!-- ========================================================= -->
 
     <script src="app.js"></script>
+
 
 </body>
 

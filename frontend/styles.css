@@ -1111,3 +1111,22 @@ footer {
     }
 
 }
+
+	.analysis-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 9px;
+    background: #1769d2;
+    color: white;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 13px;
+    transition: .2s ease;
+	}
+
+	.analysis-button:hover {
+    transform: translateY(-1px);
+    opacity: .92;
+}
