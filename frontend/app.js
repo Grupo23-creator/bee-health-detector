@@ -1001,7 +1001,7 @@ function displayResult(data) {
 // GUARDAR ANÁLISIS
 // ============================================================================
 
-function saveAnalysis(data) {
+function saveAnalysis(data, hiveOverride = null) {
 
     try {
 
@@ -1265,3 +1265,282 @@ console.log(
     "💾 Historial:",
     STORAGE_KEY
 );
+
+// ============================================================================
+// ANÁLISIS MASIVO DE AUDIOS
+// ============================================================================
+
+console.log("📁 Inicializando módulo de análisis masivo...");
+
+const bulkAudioInput = document.getElementById("bulkAudioInput");
+const selectBulkBtn = document.getElementById("selectBulkBtn");
+const analyzeBulkBtn = document.getElementById("analyzeBulkBtn");
+const clearBulkBtn = document.getElementById("clearBulkBtn");
+const bulkSelectedCount = document.getElementById("bulkSelectedCount");
+const bulkProgressWrap = document.getElementById("bulkProgressWrap");
+const bulkProgressText = document.getElementById("bulkProgressText");
+const bulkProgressPercent = document.getElementById("bulkProgressPercent");
+const bulkProgressBar = document.getElementById("bulkProgressBar");
+const bulkCurrentFile = document.getElementById("bulkCurrentFile");
+const bulkFileList = document.getElementById("bulkFileList");
+
+const MAX_BULK_FILES = 50;
+let bulkFiles = [];
+
+function getHiveFromFilename(filename) {
+    if (!filename) return null;
+    const match = filename.match(/HIVE[-_\s]?(\d{3,6})/i);
+    if (!match) return null;
+    return normalizeHiveCode(`HIVE-${match[1]}`);
+}
+
+function getBulkHive(filename) {
+    const filenameHive = getHiveFromFilename(filename);
+    if (filenameHive) return filenameHive;
+    return getSelectedHive();
+}
+
+function updateBulkControls() {
+    const count = bulkFiles.length;
+
+    if (bulkSelectedCount) {
+        bulkSelectedCount.textContent =
+            `${count} archivo${count === 1 ? "" : "s"} seleccionado${count === 1 ? "" : "s"}`;
+    }
+
+    if (analyzeBulkBtn) analyzeBulkBtn.disabled = count === 0;
+    if (clearBulkBtn) clearBulkBtn.disabled = count === 0;
+}
+
+function renderBulkFileList() {
+    if (!bulkFileList) return;
+
+    bulkFileList.innerHTML = "";
+
+    if (bulkFiles.length === 0) {
+        bulkFileList.classList.remove("active");
+        return;
+    }
+
+    bulkFileList.classList.add("active");
+
+    bulkFiles.forEach((file, index) => {
+        const row = document.createElement("div");
+        row.className = "bulk-file-row";
+
+        const name = document.createElement("span");
+        name.className = "bulk-file-name";
+        name.title = file.name;
+        name.textContent = `${index + 1}. ${file.name}`;
+
+        const status = document.createElement("span");
+        status.className = "bulk-file-status pending";
+        status.id = `bulk-status-${index}`;
+        status.textContent = "Pendiente";
+
+        row.appendChild(name);
+        row.appendChild(status);
+        bulkFileList.appendChild(row);
+    });
+}
+
+function updateBulkFileStatus(index, status, text) {
+    const element = document.getElementById(`bulk-status-${index}`);
+    if (!element) return;
+
+    element.className = `bulk-file-status ${status}`;
+    element.textContent = text;
+}
+
+if (selectBulkBtn && bulkAudioInput) {
+    selectBulkBtn.addEventListener("click", () => {
+        bulkAudioInput.click();
+    });
+
+    bulkAudioInput.addEventListener("change", () => {
+        const selected = Array.from(bulkAudioInput.files || []);
+
+        if (selected.length === 0) return;
+
+        if (selected.length > MAX_BULK_FILES) {
+            alert(
+                `Puedes seleccionar máximo ${MAX_BULK_FILES} audios por lote.\n\n` +
+                `Se conservarán los primeros ${MAX_BULK_FILES}.`
+            );
+        }
+
+        bulkFiles = selected.slice(0, MAX_BULK_FILES);
+
+        renderBulkFileList();
+        updateBulkControls();
+
+        console.log("📁 Audios seleccionados:", bulkFiles.length);
+    });
+}
+
+if (clearBulkBtn) {
+    clearBulkBtn.addEventListener("click", () => {
+        bulkFiles = [];
+
+        if (bulkAudioInput) bulkAudioInput.value = "";
+        if (bulkProgressWrap) bulkProgressWrap.classList.remove("active");
+        if (bulkProgressBar) bulkProgressBar.style.width = "0%";
+        if (bulkProgressPercent) bulkProgressPercent.textContent = "0%";
+        if (bulkProgressText) bulkProgressText.textContent = "Preparando...";
+        if (bulkCurrentFile) bulkCurrentFile.textContent = "—";
+
+        renderBulkFileList();
+        updateBulkControls();
+
+        console.log("🧹 Selección masiva limpiada.");
+    });
+}
+
+async function analyzeBulkFile(file) {
+    const formData = new FormData();
+    formData.append("file", file, file.name);
+
+    const response = await fetch(API_URL, {
+        method: "POST",
+        body: formData
+    });
+
+    let data;
+
+    try {
+        data = await response.json();
+    } catch (error) {
+        throw new Error("El servidor devolvió una respuesta no válida.");
+    }
+
+    if (!response.ok) {
+        throw new Error(data.detail || `Error HTTP ${response.status}`);
+    }
+
+    return data;
+}
+
+if (analyzeBulkBtn) {
+    analyzeBulkBtn.addEventListener("click", async () => {
+        if (!bulkFiles || bulkFiles.length === 0) {
+            alert("Selecciona al menos un archivo de audio.");
+            return;
+        }
+
+        const filesToProcess = [...bulkFiles];
+        let successful = 0;
+        let failed = 0;
+
+        analyzeBulkBtn.disabled = true;
+        if (selectBulkBtn) selectBulkBtn.disabled = true;
+        if (clearBulkBtn) clearBulkBtn.disabled = true;
+        if (recordBtn) recordBtn.disabled = true;
+        if (stopBtn) stopBtn.disabled = true;
+
+        if (bulkProgressWrap) bulkProgressWrap.classList.add("active");
+        if (bulkProgressBar) bulkProgressBar.style.width = "0%";
+        if (bulkProgressPercent) bulkProgressPercent.textContent = "0%";
+        if (bulkProgressText) {
+            bulkProgressText.textContent =
+                `Preparando ${filesToProcess.length} audios...`;
+        }
+
+        console.log(
+            `🚀 Iniciando análisis masivo de ${filesToProcess.length} audios.`
+        );
+
+        for (let i = 0; i < filesToProcess.length; i++) {
+            const file = filesToProcess[i];
+            const percentage = Math.round((i / filesToProcess.length) * 100);
+
+            if (bulkProgressBar) bulkProgressBar.style.width = `${percentage}%`;
+            if (bulkProgressPercent) bulkProgressPercent.textContent = `${percentage}%`;
+            if (bulkProgressText) {
+                bulkProgressText.textContent =
+                    `Procesando ${i + 1} de ${filesToProcess.length}`;
+            }
+            if (bulkCurrentFile) bulkCurrentFile.textContent = file.name;
+
+            updateBulkFileStatus(i, "processing", "Procesando...");
+
+            const hive = getBulkHive(file.name);
+
+            if (!hive) {
+                failed++;
+                updateBulkFileStatus(i, "error", "Sin colmena");
+                console.warn("⚠️ No se pudo identificar la colmena:", file.name);
+                continue;
+            }
+
+            try {
+                console.log(
+                    `📤 [${i + 1}/${filesToProcess.length}]`,
+                    file.name,
+                    "→",
+                    hive
+                );
+
+                const data = await analyzeBulkFile(file);
+                saveAnalysis(data, hive);
+                successful++;
+
+                const result = String(data.varroa_level || "").toUpperCase();
+                const confidence = Number(data.confidence_percentage || 0);
+
+                updateBulkFileStatus(
+                    i,
+                    "success",
+                    `${result || "OK"} · ${confidence.toFixed(1)}%`
+                );
+
+                console.log(
+                    `✅ [${i + 1}/${filesToProcess.length}]`,
+                    file.name,
+                    data
+                );
+            } catch (error) {
+                failed++;
+                updateBulkFileStatus(i, "error", "Error");
+                console.error(
+                    `❌ [${i + 1}/${filesToProcess.length}]`,
+                    file.name,
+                    error
+                );
+            }
+        }
+
+        if (bulkProgressBar) bulkProgressBar.style.width = "100%";
+        if (bulkProgressPercent) bulkProgressPercent.textContent = "100%";
+        if (bulkProgressText) {
+            bulkProgressText.textContent = "Análisis masivo completado";
+        }
+        if (bulkCurrentFile) {
+            bulkCurrentFile.textContent =
+                `${successful} procesados correctamente · ${failed} con error`;
+        }
+
+        console.log("🏁 Análisis masivo terminado:", {
+            total: filesToProcess.length,
+            successful: successful,
+            failed: failed
+        });
+
+        alert(
+            "Análisis masivo completado.\n\n" +
+            `Audios seleccionados: ${filesToProcess.length}\n` +
+            `Procesados correctamente: ${successful}\n` +
+            `Con error: ${failed}\n\n` +
+            "Los resultados exitosos fueron guardados en el historial."
+        );
+
+        analyzeBulkBtn.disabled = false;
+        if (selectBulkBtn) selectBulkBtn.disabled = false;
+        if (clearBulkBtn) clearBulkBtn.disabled = false;
+        if (recordBtn) updateRecordingAvailability();
+    });
+}
+
+updateBulkControls();
+
+console.log("📁 Módulo de análisis masivo disponible.");
+console.log("📁 Límite máximo de archivos:", MAX_BULK_FILES);

@@ -124,6 +124,200 @@
 
         }
 
+
+        /* =========================================================
+           ANÁLISIS MASIVO
+           ========================================================= */
+
+        .bulk-analysis-card {
+            margin-top: 22px;
+            padding: 22px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+        }
+
+        .bulk-analysis-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .bulk-analysis-header h3 {
+            margin: 5px 0 6px;
+            color: #172033;
+            font-size: 18px;
+        }
+
+        .bulk-analysis-header p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .bulk-file-input {
+            display: none;
+        }
+
+        .bulk-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .bulk-button {
+            border: 0;
+            border-radius: 12px;
+            padding: 11px 16px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+        }
+
+        .bulk-button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(15, 23, 42, .08);
+        }
+
+        .bulk-button:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .bulk-button-primary {
+            background: #f59e0b;
+            color: #fff;
+        }
+
+        .bulk-button-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .bulk-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .bulk-counter {
+            padding: 7px 10px;
+            border-radius: 999px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            color: #4b5563;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .bulk-progress-wrap {
+            display: none;
+            margin-top: 16px;
+        }
+
+        .bulk-progress-wrap.active {
+            display: block;
+        }
+
+        .bulk-progress-info {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 7px;
+            color: #4b5563;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .bulk-progress-track {
+            height: 9px;
+            overflow: hidden;
+            background: #f3f4f6;
+            border-radius: 999px;
+        }
+
+        .bulk-progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #f59e0b;
+            border-radius: 999px;
+            transition: width .25s ease;
+        }
+
+        .bulk-current-file {
+            margin-top: 8px;
+            color: #6b7280;
+            font-size: 11px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .bulk-file-list {
+            display: none;
+            margin-top: 16px;
+            max-height: 280px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+        }
+
+        .bulk-file-list.active {
+            display: block;
+        }
+
+        .bulk-file-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            align-items: center;
+            padding: 10px 12px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .bulk-file-row:last-child {
+            border-bottom: 0;
+        }
+
+        .bulk-file-name {
+            color: #374151;
+            font-size: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .bulk-file-status {
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .bulk-file-status.pending { color: #9ca3af; }
+        .bulk-file-status.processing { color: #d97706; }
+        .bulk-file-status.success { color: #059669; }
+        .bulk-file-status.error { color: #dc2626; }
+
+        @media (max-width: 650px) {
+            .bulk-analysis-header {
+                flex-direction: column;
+            }
+
+            .bulk-actions {
+                flex-direction: column;
+            }
+
+            .bulk-button {
+                width: 100%;
+            }
+        }
+
     </style>
 
 </head>
@@ -452,6 +646,132 @@
 
             </p>
 
+
+        </section>
+
+
+
+        <!-- ===================================================== -->
+        <!-- ANÁLISIS MASIVO                                       -->
+        <!-- ===================================================== -->
+
+        <section class="bulk-analysis-card">
+
+            <div class="bulk-analysis-header">
+
+                <div>
+                    <span class="section-label">
+                        ANÁLISIS MASIVO
+                    </span>
+
+                    <h3>
+                        Analizar múltiples audios
+                    </h3>
+
+                    <p>
+                        Selecciona hasta 50 archivos de audio y el sistema
+                        los procesará automáticamente uno por uno.
+                    </p>
+                </div>
+
+                <div class="microphone-icon">
+                    📁
+                </div>
+
+            </div>
+
+            <input
+                type="file"
+                id="bulkAudioInput"
+                class="bulk-file-input"
+                accept="audio/*,.wav,.webm,.mp3,.ogg,.m4a"
+                multiple
+            >
+
+            <div class="bulk-actions">
+
+                <button
+                    type="button"
+                    id="selectBulkBtn"
+                    class="bulk-button bulk-button-secondary"
+                >
+                    📁 Seleccionar audios
+                </button>
+
+                <button
+                    type="button"
+                    id="analyzeBulkBtn"
+                    class="bulk-button bulk-button-primary"
+                    disabled
+                >
+                    ▶ Analizar audios
+                </button>
+
+                <button
+                    type="button"
+                    id="clearBulkBtn"
+                    class="bulk-button bulk-button-secondary"
+                    disabled
+                >
+                    🗑️ Limpiar
+                </button>
+
+            </div>
+
+            <div
+                id="bulkSummary"
+                class="bulk-summary"
+            >
+                <span
+                    id="bulkSelectedCount"
+                    class="bulk-counter"
+                >
+                    0 archivos seleccionados
+                </span>
+
+                <span
+                    id="bulkLimitInfo"
+                    class="bulk-counter"
+                >
+                    Límite: 50
+                </span>
+            </div>
+
+            <div
+                id="bulkProgressWrap"
+                class="bulk-progress-wrap"
+            >
+
+                <div class="bulk-progress-info">
+                    <span id="bulkProgressText">
+                        Preparando...
+                    </span>
+
+                    <span id="bulkProgressPercent">
+                        0%
+                    </span>
+                </div>
+
+                <div class="bulk-progress-track">
+                    <div
+                        id="bulkProgressBar"
+                        class="bulk-progress-bar"
+                    ></div>
+                </div>
+
+                <div
+                    id="bulkCurrentFile"
+                    class="bulk-current-file"
+                >
+                    —
+                </div>
+
+            </div>
+
+            <div
+                id="bulkFileList"
+                class="bulk-file-list"
+            ></div>
 
         </section>
 
