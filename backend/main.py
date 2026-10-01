@@ -1,5 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import Optional, Dict, Any
 
 import os
 import shutil
@@ -9,6 +11,7 @@ import tempfile
 import joblib
 import librosa
 import numpy as np
+import psycopg2
 
 
 # =============================================================================
@@ -22,27 +25,6 @@ SAMPLE_RATE = 16000
 SEGMENT_DURATION = 2
 SEGMENT_SAMPLES = SAMPLE_RATE * SEGMENT_DURATION
 
-# Ruta de FFmpeg
-import os
-import shutil
-
-# Detectar FFmpeg automáticamente según el entorno
-if os.name == "nt":
-    # Windows
-    WINDOWS_FFMPEG = r"C:\ffmpeg\bin\ffmpeg.exe"
-
-    if os.path.exists(WINDOWS_FFMPEG):
-        FFMPEG_PATH = WINDOWS_FFMPEG
-    else:
-        FFMPEG_PATH = shutil.which("ffmpeg")
-else:
-    # Linux / Render
-    FFMPEG_PATH = shutil.which("ffmpeg")
-
-if not FFMPEG_PATH:
-    raise RuntimeError(
-        "FFmpeg no está instalado o no se encuentra disponible."
-    )
 N_MFCC = 13
 N_FFT = 1024
 HOP_LENGTH = 512
@@ -51,6 +33,94 @@ RMS_THRESHOLD = 1e-6
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "model.pkl")
+
+
+# =============================================================================
+# CONFIGURACIÓN DE BASE DE DATOS
+# =============================================================================
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+
+def get_db_connection():
+    """
+    Crea una conexión con PostgreSQL/Supabase utilizando
+    la variable de entorno DATABASE_URL.
+    """
+
+    if not DATABASE_URL:
+        raise RuntimeError(
+            "La variable de entorno DATABASE_URL no está configurada."
+        )
+
+    return psycopg2.connect(
+        DATABASE_URL,
+        sslmode="require"
+    )
+
+
+# =============================================================================
+# MODELO DE DATOS PARA GUARDAR ANÁLISIS
+# =============================================================================
+
+class AnalysisPayload(BaseModel):
+
+    timestamp: Optional[str] = None
+
+    filename: str
+
+    hive: Optional[str] = None
+
+    result: Optional[str] = None
+
+    confidence: Optional[float] = 0
+
+    totalSegments: Optional[int] = 0
+
+    lowSegments: Optional[int] = 0
+
+    highSegments: Optional[int] = 0
+
+    diagnosis: Optional[str] = ""
+
+    samplingRate: Optional[str] = ""
+
+    segmentDuration: Optional[str] = ""
+
+    window: Optional[str] = ""
+
+    mfccCoefficients: Optional[int] = 0
+
+    probabilities: Optional[Dict[str, float]] = None
+
+
+# =============================================================================
+# RUTA DE FFMPEG
+# =============================================================================
+
+# Detectar FFmpeg automáticamente según el entorno
+
+if os.name == "nt":
+
+    # Windows
+    WINDOWS_FFMPEG = r"C:\ffmpeg\bin\ffmpeg.exe"
+
+    if os.path.exists(WINDOWS_FFMPEG):
+        FFMPEG_PATH = WINDOWS_FFMPEG
+    else:
+        FFMPEG_PATH = shutil.which("ffmpeg")
+
+else:
+
+    # Linux / Render
+    FFMPEG_PATH = shutil.which("ffmpeg")
+
+
+if not FFMPEG_PATH:
+
+    raise RuntimeError(
+        "FFmpeg no está instalado o no se encuentra disponible."
+    )
 
 
 # =============================================================================
@@ -112,7 +182,7 @@ else:
     print("=" * 80)
     print("ADVERTENCIA")
     print("=" * 80)
-    print(f"No se encontró el modelo:")
+    print("No se encontró el modelo:")
     print(MODEL_PATH)
     print("=" * 80)
 
@@ -124,6 +194,7 @@ else:
 def convert_to_wav(input_path, output_path):
     """
     Convierte el archivo recibido a WAV:
+
         - 16 kHz
         - mono
         - PCM 16-bit
@@ -132,6 +203,7 @@ def convert_to_wav(input_path, output_path):
     """
 
     if not os.path.exists(FFMPEG_PATH):
+
         raise RuntimeError(
             f"No se encontró FFmpeg en: {FFMPEG_PATH}"
         )
@@ -158,6 +230,7 @@ def convert_to_wav(input_path, output_path):
     )
 
     if result.returncode != 0:
+
         raise RuntimeError(
             "FFmpeg no pudo convertir el audio.\n"
             + result.stderr[-2000:]
@@ -397,6 +470,7 @@ def read_root():
         "message": "Bee Health Detector API activa",
         "version": APP_VERSION,
         "model_loaded": model is not None,
+        "database_configured": bool(DATABASE_URL),
         "sample_rate": SAMPLE_RATE,
         "segment_duration_seconds": SEGMENT_DURATION,
         "features": 26
@@ -699,3 +773,289 @@ async def predict_hive_health(
                 except Exception:
 
                     pass
+
+
+# =============================================================================
+# ENDPOINT PARA GUARDAR ANÁLISIS
+# =============================================================================
+
+@app.post("/api/v1/analyses")
+def save_analysis(
+    analysis: AnalysisPayload
+):
+    """
+    Guarda un análisis realizado por el sistema
+    en PostgreSQL/Supabase.
+    """
+
+    connection = None
+    cursor = None
+
+    try:
+
+        connection = get_db_connection()
+
+        cursor = connection.cursor()
+
+        probabilities = analysis.probabilities or {}
+
+        low_probability = float(
+            probabilities.get("LOW", 0)
+        )
+
+        high_probability = float(
+            probabilities.get("HIGH", 0)
+        )
+
+        insert_query = """
+            INSERT INTO public.analyses (
+                filename,
+                hive,
+                result,
+                confidence,
+                total_segments,
+                low_segments,
+                high_segments,
+                diagnosis,
+                sampling_rate,
+                segment_duration,
+                audio_window,
+                mfcc_coefficients,
+                low_probability,
+                high_probability
+            )
+            VALUES (
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s
+            )
+            RETURNING id, created_at
+        """
+
+        cursor.execute(
+            insert_query,
+            (
+                analysis.filename,
+                analysis.hive,
+                analysis.result,
+                analysis.confidence,
+                analysis.totalSegments,
+                analysis.lowSegments,
+                analysis.highSegments,
+                analysis.diagnosis,
+                analysis.samplingRate,
+                analysis.segmentDuration,
+                analysis.window,
+                analysis.mfccCoefficients,
+                low_probability,
+                high_probability
+            )
+        )
+
+        row = cursor.fetchone()
+
+        connection.commit()
+
+        print()
+        print("=" * 80)
+        print("ANÁLISIS GUARDADO EN SUPABASE")
+        print("=" * 80)
+        print(f"ID: {row[0]}")
+        print(f"Archivo: {analysis.filename}")
+        print(f"Colmena: {analysis.hive}")
+        print(f"Resultado: {analysis.result}")
+        print("=" * 80)
+
+        return {
+            "status": "success",
+            "message": "Análisis guardado correctamente.",
+            "id": str(row[0]),
+            "created_at": row[1].isoformat()
+        }
+
+    except Exception as e:
+
+        if connection:
+            connection.rollback()
+
+        print()
+        print("=" * 80)
+        print("ERROR GUARDANDO ANÁLISIS")
+        print("=" * 80)
+        print(str(e))
+        print("=" * 80)
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "No fue posible guardar el análisis "
+                f"en la base de datos: {str(e)}"
+            )
+        )
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if connection:
+            connection.close()
+
+
+# =============================================================================
+# ENDPOINT PARA CONSULTAR HISTORIAL
+# =============================================================================
+
+@app.get("/api/v1/analyses")
+def get_analyses():
+
+    connection = None
+    cursor = None
+
+    try:
+
+        connection = get_db_connection()
+
+        cursor = connection.cursor()
+
+        query = """
+            SELECT
+                id,
+                created_at,
+                filename,
+                hive,
+                result,
+                confidence,
+                total_segments,
+                low_segments,
+                high_segments,
+                diagnosis,
+                sampling_rate,
+                segment_duration,
+                audio_window,
+                mfcc_coefficients,
+                low_probability,
+                high_probability
+            FROM public.analyses
+            ORDER BY created_at DESC
+        """
+
+        cursor.execute(query)
+
+        rows = cursor.fetchall()
+
+        analyses = []
+
+        for row in rows:
+
+            analyses.append({
+
+                "id": str(row[0]),
+
+                "timestamp": (
+                    row[1].isoformat()
+                    if row[1]
+                    else None
+                ),
+
+                "filename": row[2],
+
+                "hive": row[3],
+
+                "result": row[4],
+
+                "confidence": (
+                    float(row[5])
+                    if row[5] is not None
+                    else 0
+                ),
+
+                "totalSegments": (
+                    int(row[6])
+                    if row[6] is not None
+                    else 0
+                ),
+
+                "lowSegments": (
+                    int(row[7])
+                    if row[7] is not None
+                    else 0
+                ),
+
+                "highSegments": (
+                    int(row[8])
+                    if row[8] is not None
+                    else 0
+                ),
+
+                "diagnosis": row[9] or "",
+
+                "samplingRate": row[10] or "",
+
+                "segmentDuration": row[11] or "",
+
+                "window": row[12] or "",
+
+                "mfccCoefficients": (
+                    int(row[13])
+                    if row[13] is not None
+                    else 0
+                ),
+
+                "probabilities": {
+
+                    "LOW": (
+                        float(row[14])
+                        if row[14] is not None
+                        else 0
+                    ),
+
+                    "HIGH": (
+                        float(row[15])
+                        if row[15] is not None
+                        else 0
+                    )
+                }
+            })
+
+        return {
+            "status": "success",
+            "count": len(analyses),
+            "analyses": analyses
+        }
+
+    except Exception as e:
+
+        print()
+        print("=" * 80)
+        print("ERROR CONSULTANDO ANÁLISIS")
+        print("=" * 80)
+        print(str(e))
+        print("=" * 80)
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "No fue posible consultar "
+                f"los análisis: {str(e)}"
+            )
+        )
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if connection:
+            connection.close()

@@ -8,3 +8,4 @@ soundfile
 audioread
 resampy
 joblib
+psycopg2-binary
