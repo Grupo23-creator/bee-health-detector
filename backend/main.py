@@ -1059,3 +1059,50 @@ def get_analyses():
 
         if connection:
             connection.close()
+# =============================================================================
+# PRUEBA DE CONEXIÓN A BASE DE DATOS
+# =============================================================================
+
+@app.get("/database-test")
+def database_test():
+
+    connection = None
+    cursor = None
+
+    try:
+
+        connection = get_db_connection()
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT NOW();")
+
+        row = cursor.fetchone()
+
+        return {
+            "status": "success",
+            "database_connected": True,
+            "database_time": row[0].isoformat()
+        }
+
+    except Exception as e:
+
+        print()
+        print("=" * 80)
+        print("ERROR DE CONEXIÓN A BASE DE DATOS")
+        print("=" * 80)
+        print(str(e))
+        print("=" * 80)
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error conectando a PostgreSQL: {str(e)}"
+        )
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if connection:
+            connection.close()
