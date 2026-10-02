@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
+from datetime import datetime
 
 import os
 import shutil
@@ -670,7 +671,47 @@ async def predict_hive_health(
         )
 
         print("=" * 80)
+        # ---------------------------------------------------------
+        # GUARDAR AUTOMÁTICAMENTE EL ANÁLISIS EN SUPABASE
+        # ---------------------------------------------------------
 
+        analysis_payload = AnalysisPayload(
+            timestamp=datetime.utcnow().isoformat(),
+            filename=file.filename,
+            hive="SIN_ASIGNAR",
+            result=final_label,
+            confidence=confidence,
+            totalSegments=result["total_segments"],
+            lowSegments=result["low_segments"],
+            highSegments=result["high_segments"],
+            diagnosis=diagnosis,
+            samplingRate=sr,
+            segmentDuration=2,
+            window="Hann",
+            mfccCoefficients=13,
+            probabilities={
+                "LOW": low_probability,
+                "HIGH": high_probability
+            }
+        )
+
+        database_result = save_analysis(
+            analysis_payload
+        )
+
+        print()
+        print("=" * 80)
+        print("PREDICCIÓN GUARDADA AUTOMÁTICAMENTE")
+        print("=" * 80)
+        print(
+            f"ID del análisis: "
+            f"{database_result['id']}"
+        )
+        print(
+            f"Fecha de creación: "
+            f"{database_result['created_at']}"
+        )
+        print("=" * 80)
         # ---------------------------------------------------------
         # RESPUESTA JSON
         # ---------------------------------------------------------
@@ -732,7 +773,11 @@ async def predict_hive_health(
 
                 "features_per_segment": 26
             },
-
+            "database": {
+                "saved": True,
+                "analysis_id": database_result["id"],
+                "created_at": database_result["created_at"]
+            },
             "notice": (
                 "Resultado experimental del prototipo. "
                 "No constituye un diagnóstico veterinario."
