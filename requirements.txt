@@ -9,3 +9,4 @@ soundfile
 resampy
 audioread
 ffmpeg-python
+psycopg2-binary
