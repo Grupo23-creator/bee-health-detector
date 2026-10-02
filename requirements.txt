@@ -1,12 +1,12 @@
 fastapi
 uvicorn
-python-multipart
-librosa
 numpy
+librosa
 scikit-learn
-joblib
+python-multipart
 soundfile
-resampy
 audioread
+resampy
+joblib
 ffmpeg-python
 psycopg2-binary
