@@ -2,11 +2,11 @@ fastapi
 uvicorn
 numpy
 librosa
-scikit-learn
+scikit-learn==1.6.1
 python-multipart
 soundfile
 audioread
 resampy
-joblib
+joblib==1.6.0
 ffmpeg-python
 psycopg2-binary

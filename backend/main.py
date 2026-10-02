@@ -374,7 +374,12 @@ def predict_audio(features_array):
     Realiza una predicción para cada segmento y posteriormente
     obtiene un resultado global del audio.
 
-    Se utiliza la probabilidad promedio de HIGH.
+    El modelo utiliza las clases:
+        HIGH
+        LOW
+
+    La clasificación global se obtiene a partir de la
+    probabilidad promedio de HIGH.
     """
 
     if model is None:
@@ -382,6 +387,10 @@ def predict_audio(features_array):
         raise RuntimeError(
             "El modelo no está cargado."
         )
+
+    # ---------------------------------------------------------
+    # PREDICCIÓN POR SEGMENTO
+    # ---------------------------------------------------------
 
     predictions = model.predict(
         features_array
@@ -391,47 +400,126 @@ def predict_audio(features_array):
         features_array
     )
 
-    # Obtener posición de cada clase
+    # ---------------------------------------------------------
+    # IDENTIFICAR LAS CLASES DEL MODELO
+    # ---------------------------------------------------------
+
     classes = list(model.classes_)
 
-    if 1 in classes:
-        high_index = classes.index(1)
-    else:
-        high_index = None
+    print(
+        f"Clases del modelo: {classes}"
+    )
 
-    if 0 in classes:
-        low_index = classes.index(0)
-    else:
-        low_index = None
+    if "HIGH" not in classes:
 
-    # Probabilidad promedio de HIGH
-    if high_index is not None:
-
-        high_probability = float(
-            np.mean(
-                probabilities[:, high_index]
-            )
+        raise RuntimeError(
+            "El modelo no contiene la clase HIGH."
         )
 
-    else:
+    if "LOW" not in classes:
 
-        high_probability = 0.0
-
-    # Probabilidad promedio de LOW
-    if low_index is not None:
-
-        low_probability = float(
-            np.mean(
-                probabilities[:, low_index]
-            )
+        raise RuntimeError(
+            "El modelo no contiene la clase LOW."
         )
 
-    else:
+    high_index = classes.index("HIGH")
+    low_index = classes.index("LOW")
 
-        low_probability = 0.0
+    # ---------------------------------------------------------
+    # PROBABILIDADES POR SEGMENTO
+    # ---------------------------------------------------------
 
-    # Resultado global
-    if high_probability >= low_probability:
+    high_probabilities = probabilities[
+        :,
+        high_index
+    ]
+
+    low_probabilities = probabilities[
+        :,
+        low_index
+    ]
+
+    # ---------------------------------------------------------
+    # PROBABILIDAD PROMEDIO DEL AUDIO COMPLETO
+    # ---------------------------------------------------------
+
+    high_probability = float(
+        np.mean(
+            high_probabilities
+        )
+    )
+
+    low_probability = float(
+        np.mean(
+            low_probabilities
+        )
+    )
+
+    # ---------------------------------------------------------
+    # MEDIANA
+    # ---------------------------------------------------------
+
+    high_probability_median = float(
+        np.median(
+            high_probabilities
+        )
+    )
+
+    low_probability_median = float(
+        np.median(
+            low_probabilities
+        )
+    )
+
+    # ---------------------------------------------------------
+    # MÁXIMO
+    # ---------------------------------------------------------
+
+    high_probability_max = float(
+        np.max(
+            high_probabilities
+        )
+    )
+
+    # ---------------------------------------------------------
+    # SEGMENTOS POR CLASE
+    # ---------------------------------------------------------
+
+    low_segments = int(
+        np.sum(
+            predictions == "LOW"
+        )
+    )
+
+    high_segments = int(
+        np.sum(
+            predictions == "HIGH"
+        )
+    )
+
+    total_segments = len(
+        predictions
+    )
+
+    # ---------------------------------------------------------
+    # PORCENTAJE DE SEGMENTOS HIGH
+    # ---------------------------------------------------------
+
+    high_segment_percentage = float(
+        high_segments / total_segments
+        if total_segments > 0
+        else 0
+    )
+
+    # ---------------------------------------------------------
+    # RESULTADO GLOBAL
+    #
+    # Utilizamos explícitamente 0.50 como umbral.
+    # ---------------------------------------------------------
+
+    HIGH_THRESHOLD = 0.50
+
+    if high_probability >= HIGH_THRESHOLD:
 
         final_label = "HIGH"
 
@@ -439,24 +527,82 @@ def predict_audio(features_array):
 
         final_label = "LOW"
 
-    # Cantidad de segmentos por clase
-    low_segments = int(
-        np.sum(predictions == 0)
+    # ---------------------------------------------------------
+    # INFORMACIÓN DE DEPURACIÓN
+    # ---------------------------------------------------------
+
+    print(
+        f"Probabilidad HIGH promedio: "
+        f"{high_probability:.6f}"
     )
 
-    high_segments = int(
-        np.sum(predictions == 1)
+    print(
+        f"Probabilidad LOW promedio: "
+        f"{low_probability:.6f}"
     )
 
-    total_segments = len(predictions)
+    print(
+        f"Mediana HIGH: "
+        f"{high_probability_median:.6f}"
+    )
+
+    print(
+        f"Máximo HIGH: "
+        f"{high_probability_max:.6f}"
+    )
+
+    print(
+        f"Segmentos LOW: "
+        f"{low_segments}"
+    )
+
+    print(
+        f"Segmentos HIGH: "
+        f"{high_segments}"
+    )
+
+    print(
+        f"Porcentaje segmentos HIGH: "
+        f"{high_segment_percentage * 100:.2f}%"
+    )
+
+    print(
+        f"Resultado global: "
+        f"{final_label}"
+    )
+
+    # ---------------------------------------------------------
+    # RESPUESTA
+    # ---------------------------------------------------------
 
     return {
+
         "label": final_label,
+
         "high_probability": high_probability,
+
         "low_probability": low_probability,
-        "low_segments": low_segments,
-        "high_segments": high_segments,
-        "total_segments": total_segments
+
+        "high_probability_median":
+            high_probability_median,
+
+        "low_probability_median":
+            low_probability_median,
+
+        "high_probability_max":
+            high_probability_max,
+
+        "high_segment_percentage":
+            high_segment_percentage,
+
+        "low_segments":
+            low_segments,
+
+        "high_segments":
+            high_segments,
+
+        "total_segments":
+            total_segments
     }
 
 
@@ -633,6 +779,17 @@ async def predict_hive_health(
         low_probability = result[
             "low_probability"
         ]
+        high_probability_median = result[
+            "high_probability_median"
+        ]
+
+        high_probability_max = result[
+            "high_probability_max"
+        ]
+
+        high_segment_percentage = result[
+            "high_segment_percentage"
+        ]
 
         # ---------------------------------------------------------
         # DIAGNÓSTICO PARA LA INTERFAZ
@@ -712,6 +869,7 @@ async def predict_hive_health(
             f"{database_result['created_at']}"
         )
         print("=" * 80)
+        
         # ---------------------------------------------------------
         # RESPUESTA JSON
         # ---------------------------------------------------------
@@ -744,6 +902,31 @@ async def predict_hive_health(
                 )
             },
 
+            "model_analysis": {
+
+                "high_probability_mean": round(
+                    high_probability,
+                    4
+                ),
+
+                "high_probability_median": round(
+                    high_probability_median,
+                    4
+                ),
+
+                "high_probability_max": round(
+                    high_probability_max,
+                    4
+                ),
+
+                "high_segment_percentage": round(
+                    high_segment_percentage * 100,
+                    2
+                ),
+
+                "threshold": 0.50
+            },
+
             "segments": {
 
                 "total": result[
@@ -773,17 +956,21 @@ async def predict_hive_health(
 
                 "features_per_segment": 26
             },
+
             "database": {
+
                 "saved": True,
+
                 "analysis_id": database_result["id"],
+
                 "created_at": database_result["created_at"]
             },
+
             "notice": (
                 "Resultado experimental del prototipo. "
                 "No constituye un diagnóstico veterinario."
             )
         }
-
     except Exception as e:
 
         print()
