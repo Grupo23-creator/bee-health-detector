@@ -83,9 +83,9 @@ class AnalysisPayload(BaseModel):
 
     diagnosis: Optional[str] = ""
 
-    samplingRate: Optional[str] = ""
+    samplingRate: Optional[int] = 0
 
-    segmentDuration: Optional[str] = ""
+    segmentDuration: Optional[int] = 0
 
     window: Optional[str] = ""
 
