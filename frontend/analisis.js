@@ -1,48 +1,40 @@
 /* ============================================================
    BEE HEALTH DETECTOR - DASHBOARD
-   Fuente de datos: localStorage del navegador
+   Fuente de datos: API compartida -> Supabase
    ============================================================ */
 
-const STORAGE_KEY = "beeHealthAnalysisHistory";
-
+const API_BASE_URL = "https://bee-health-api.onrender.com";
 let allAnalyses = [];
+let historyLoadError = null;
 
 /* ------------------------------------------------------------
    UTILIDADES
    ------------------------------------------------------------ */
 
-function getHistory() {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+async function getHistory() {
+    const response = await fetch(`${API_BASE_URL}/api/v1/analyses`, {
+        method: "GET",
+        headers: { "Accept": "application/json" }
+    });
 
-        if (!raw) {
-            return [];
-        }
-
-        const data = JSON.parse(raw);
-
-        if (!Array.isArray(data)) {
-            return [];
-        }
-
-        return data
-            .filter(item => item && typeof item === "object")
-            .sort(
-                (a, b) =>
-                    new Date(b.timestamp || 0) -
-                    new Date(a.timestamp || 0)
-            );
-
-    } catch (error) {
-        console.error(
-            "❌ No fue posible leer el historial:",
-            error
-        );
-
-        return [];
+    if (!response.ok) {
+        throw new Error(`La API respondió HTTP ${response.status}`);
     }
-}
 
+    const payload = await response.json();
+
+    if (!payload || !Array.isArray(payload.analyses)) {
+        throw new Error("La respuesta de la API no contiene una lista válida de análisis.");
+    }
+
+    return payload.analyses
+        .filter(item => item && typeof item === "object")
+        .sort(
+            (a, b) =>
+                new Date(b.timestamp || 0) -
+                new Date(a.timestamp || 0)
+        );
+}
 
 /* ------------------------------------------------------------
    FORMATO DE DATOS
@@ -980,8 +972,9 @@ function renderHistory(data) {
                 "
             >
 
-                No hay análisis registrados
-                en este navegador.
+                ${historyLoadError
+                    ? `No fue posible cargar el historial compartido: ${escapeHtml(historyLoadError)}`
+                    : "No hay análisis registrados en la base de datos compartida."}
 
             </td>
 
@@ -1232,48 +1225,43 @@ function applyFilters() {
    ACTUALIZACIÓN COMPLETA
    ------------------------------------------------------------ */
 
-function updateDashboard() {
+async function updateDashboard() {
+    const tbody = document.getElementById("historyTable");
 
-    allAnalyses =
-        getHistory();
+    try {
+        historyLoadError = null;
+        allAnalyses = await getHistory();
 
+        updateKPIs(allAnalyses);
+        updateDonut(allAnalyses);
+        updateEvolution(allAnalyses);
+        updateHives(allAnalyses);
+        updateProcessing(allAnalyses);
+        updateConfidenceChart(allAnalyses);
+        applyFilters();
 
-    updateKPIs(
-        allAnalyses
-    );
+        console.log(`📊 Dashboard actualizado desde la API: ${allAnalyses.length} análisis`);
+    } catch (error) {
+        historyLoadError = error?.message || "Error desconocido al consultar la API.";
+        allAnalyses = [];
 
+        console.error("❌ No fue posible cargar el historial compartido:", error);
 
-    updateDonut(
-        allAnalyses
-    );
+        updateKPIs(allAnalyses);
+        updateDonut(allAnalyses);
+        updateEvolution(allAnalyses);
+        updateHives(allAnalyses);
+        updateProcessing(allAnalyses);
+        updateConfidenceChart(allAnalyses);
+        applyFilters();
 
-
-    updateEvolution(
-        allAnalyses
-    );
-
-
-    updateHives(
-        allAnalyses
-    );
-
-
-    updateProcessing(
-        allAnalyses
-    );
-
-
-    updateConfidenceChart(
-        allAnalyses
-    );
-
-
-    applyFilters();
-
-
-    console.log(
-        `📊 Dashboard actualizado: ${allAnalyses.length} análisis`
-    );
+        if (tbody) {
+            const messageCell = tbody.querySelector("td");
+            if (messageCell) {
+                messageCell.textContent = `Error al consultar el historial compartido: ${historyLoadError}. Verifica la conexión con la API e intenta actualizar.`;
+            }
+        }
+    }
 }
 
 
@@ -1318,26 +1306,10 @@ document.addEventListener(
         updateDashboard();
 
 
-        /*
-         * Si se realiza un análisis
-         * desde otra pestaña del mismo
-         * origen, el dashboard se
-         * actualiza automáticamente.
-         */
-
-        window.addEventListener(
-            "storage",
-            event => {
-
-                if (
-                    event.key ===
-                    STORAGE_KEY
-                ) {
-
-                    updateDashboard();
-                }
-            }
-        );
+        // Al volver a esta pestaña, consultar de nuevo la API compartida.
+        window.addEventListener("focus", () => {
+            updateDashboard();
+        });
     }
 );
 
